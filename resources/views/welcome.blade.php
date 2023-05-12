@@ -75,12 +75,36 @@
       <div class="form-group">
         <label class="form-label" for="message">Message:</label>
         <textarea class="form-input" id="message" rows="4" required></textarea>
+        <div id="character-count" class="character-count"></div>
+
       </div>
 
       <button class="form-button" type="submit">Send SMS</button>
     </form>
   </div>
-  
+  <script>
+    const pageOneCharLimit = 160;
+    const pageTwoCharLimit = 154;
+
+    $(document).ready(function() {
+      const characterCountElement = $("#character-count");
+      const messageInput = $("#message");
+
+      messageInput.on("input", function() {
+        const message = $(this).val();
+        const messageLength = message.length;
+        let remainingChars;
+
+        if (messageLength <= pageOneCharLimit) {
+          remainingChars = pageOneCharLimit - messageLength;
+          characterCountElement.text(`${remainingChars} characters remaining for page 1`);
+        } else {
+          remainingChars = pageTwoCharLimit - (messageLength - pageOneCharLimit);
+          characterCountElement.text(`${remainingChars} characters remaining for page 2`);
+        }
+      });
+    });
+  </script>
    
 
 </body>
