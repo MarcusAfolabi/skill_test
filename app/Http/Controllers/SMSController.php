@@ -18,46 +18,138 @@ class SmsController extends Controller
     }
 
 
-    public function sendSms(Request $request)
-    {
-        $message = $request->input('message');
-        $recipients = $request->input('recipients');
+    // public function sendSms(Request $request)
+    // {
+    //     $message = $request->input('message');
+    //     $recipients = $request->input('recipients');
 
-        // Replace numeric values starting with 0 with 234 in recipients (unchanged)
-        $recipients = preg_replace('/\b0(\d+)/', '234$1', $recipients);
-        // Split recipients by comma or new lines
-        $recipientsArray = preg_split('/,|\r\n?|\n/', $recipients);
-        // dd($recipientsArray);
+    //     // Replace numeric values starting with 0 with 234 in recipients (unchanged)
+    //     $recipients = preg_replace('/\b0(\d+)/', '234$1', $recipients);
+    //     // Split recipients by comma or new lines
+    //     $recipientsArray = preg_split('/,|\r\n?|\n/', $recipients);
+    //     // dd($recipientsArray);
 
-        // Load and parse the text file containing prefixes and charges
-        $lines = file(public_path('PriceList.txt'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $prefixCharges = [];
+    //     // Load and parse the text file containing prefixes and charges
+    //     $lines = file(public_path('PriceList.txt'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    //     $prefixCharges = [];
 
-        foreach ($lines as $line) {
-            list($prefix, $charge) = explode("=", $line);
-            $prefixCharges[$prefix] = floatval($charge);
-        }
+    //     foreach ($lines as $line) {
+    //         list($prefix, $charge) = explode("=", $line);
+    //         $prefixCharges[$prefix] = floatval($charge);
+    //     }
 
-        $totalCharge = 0;
+    //     $totalCharge = 0;
 
-        if (!empty($recipientsArray)) {
-            foreach ($recipientsArray as $recipient) {
-                $prefix = substr($recipient, 0, 6);
-                $charge = $prefixCharges[$prefix] ?? 0;
-                $totalCharge += $charge;
-            }
-        } else {
-            // Handle the case when $recipientsArray is empty
-            abort(404);
-        }
+    //     if (!empty($recipientsArray)) {
+    //         foreach ($recipientsArray as $recipient) {
+    //             $prefix = substr($recipient, 0, 6);
+    //             $charge = $prefixCharges[$prefix] ?? 0;
+    //             $totalCharge += $charge;
+    //         }
+    //     } else {
+    //         // Handle the case when $recipientsArray is empty
+    //         abort(404);
+    //     }
 
        
-        $numPages = ceil(strlen($message) / 160);
-        $numRecipients = count($recipientsArray);
-        $totalChargeFormatted = number_format($totalCharge, 2);
+    //     $numPages = ceil(strlen($message) / 160);
+    //     $numRecipients = count($recipientsArray);
+    //     $totalChargeFormatted = number_format($totalCharge, 2);
 
-        return view('sms_summary', compact('numPages', 'numRecipients', 'totalChargeFormatted'));
+    //     return view('sms_summary', compact('numPages', 'numRecipients', 'totalChargeFormatted'));
+    // }
+    // public function sendSms(Request $request)
+    // {
+    //     $message = $request->input('message');
+    //     $recipients = $request->input('recipients');
+    
+    //     // Replace numeric values starting with 0 with 234 in recipients (unchanged)
+    //     $recipients = preg_replace('/\b0(\d+)/', '234$1', $recipients);
+    //     // Split recipients by comma or new lines
+    //     $recipientsArray = preg_split('/,|\r\n?|\n/', $recipients);
+        
+    //     // Load and parse the text file containing prefixes and charges
+    //     $lines = file(public_path('PriceList.txt'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    //     $prefixCharges = [];
+        
+    //     foreach ($lines as $line) {
+    //         list($prefix, $charge) = explode("=", $line);
+    //         $prefixCharges[$prefix] = floatval($charge);
+    //     }
+        
+    //     $totalCharge = 0;
+        
+    //     if (!empty($recipientsArray)) {
+    //         foreach ($recipientsArray as $recipient) {
+    //             $prefix = substr($recipient, 0, 6);
+    //             $charge = $prefixCharges[$prefix] ?? 0;
+    //             $totalCharge += $charge;
+    //         }
+    //     } else {
+    //         // Handle the case when $recipientsArray is empty
+    //         return response()->json(['error' => 'No recipients found'], 404);
+    //     }
+    
+    //     $numPages = ceil(strlen($message) / 160);
+    //     $numRecipients = count($recipientsArray);
+    //     $totalChargeFormatted = number_format($totalCharge, 2);
+    
+    //     // Prepare the response as JSON
+    //     $response = [
+    //         'numPages' => $numPages,
+    //         'numRecipients' => $numRecipients,
+    //         'totalCharge' => $totalChargeFormatted
+    //     ];
+    
+    //     return redirect()->back()->with('status', $response);
+    // }
+
+    public function sendSms(Request $request)
+{
+    $message = $request->input('message');
+    $recipients = $request->input('recipients');
+
+    // Replace numeric values starting with 0 with 234 in recipients (unchanged)
+    $recipients = preg_replace('/\b0(\d+)/', '234$1', $recipients);
+    // Split recipients by comma or new lines
+    $recipientsArray = preg_split('/,|\r\n?|\n/', $recipients);
+    
+    // Load and parse the text file containing prefixes and charges
+    $lines = file(public_path('PriceList.txt'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $prefixCharges = [];
+    
+    foreach ($lines as $line) {
+        list($prefix, $charge) = explode("=", $line);
+        $prefixCharges[$prefix] = floatval($charge);
     }
+    
+    $totalCharge = 0;
+    $numPages = 0;
+    
+    if (!empty($recipientsArray)) {
+        foreach ($recipientsArray as $recipient) {
+            $prefix = substr($recipient, 0, 6);
+            $charge = $prefixCharges[$prefix] ?? 0;
+            $totalCharge += $charge;
+            $numPages += ceil(strlen($message) / 160); // Increment numPages for each recipient
+        }
+    } else {
+        // Handle the case when $recipientsArray is empty
+        return response()->json(['error' => 'No recipients found'], 404);
+    }
+
+    $numRecipients = count($recipientsArray);
+    $totalChargeFormatted = number_format($totalCharge, 2);
+
+    // Prepare the response as JSON
+    $response = [
+        'numPages' => $numPages,
+        'numRecipients' => $numRecipients,
+        'totalCharge' => $totalChargeFormatted
+    ];
+    
+    return redirect()->back()->with('status', json_encode($response));
+}
 
 
 

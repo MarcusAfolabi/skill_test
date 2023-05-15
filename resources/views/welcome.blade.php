@@ -4,10 +4,12 @@
 <head>
     <title>SMS Platform</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Inter, sans-serif;
             margin: 20px;
         }
 
@@ -62,17 +64,25 @@
 </head>
 
 <body>
-    <h1>SMS Platform </h1> 
-
+    <h1>SMS Platform </h1>
+    @if (session('status'))
+    <p class="bg-whit border-t-4 border-red-600 p-5 shadow-lg relative rounded-md" uk-alert>
+        {{ session('status') }}
+    </p>
+    @endif
     <div class="form-container">
+        <div id="ajaxResponse"></div>
+        <br>
+
         <!-- To use the javascript -->
-        <form id="sms-form" >
-        <!-- To use the route -->
-        <!-- <form id="sms-form" method="POST" action="{{ route('sms.send') }}"> --> 
+        <form id="sms-form">
+            <!-- To use the route -->
+
+            <!-- <form id="sms-form" method="POST" action="{{ route('sms.send') }}"> -->
             <!-- @csrf -->
             <div class="form-group">
                 <label class="form-label" for="sender-id">Sender ID:</label>
-                <input class="form-input" name="sender_id" type="text" id="sender-id" required>
+                <input class="form-input" name="sender_id" type="text" id="sender_id" required>
             </div>
 
             <div class="form-group">
@@ -87,97 +97,13 @@
                 <div id="character-count" class="character-count"></div>
             </div>
 
-            <button class="form-button" type="submit">Send SMS</button>
+            <button class="form-button" id="submit" type="submit">Send SMS</button>
         </form>
     </div>
 
-    <!-- <script>
-    const pageOneCharLimit = 160;
-    const pageTwoCharLimit = 154;
-
-    // Function to load the text file
-    function loadTextFile(file, callback) {
-        const xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                callback(xhr.responseText);
-            }
-        };
-        xhr.open("GET", file, true);
-        xhr.send();
-    }
-
-    $(document).ready(function() {
-        const characterCountElement = $("#character-count");
-        const messageInput = $("#message");
-        const recipientsInput = $("#recipients");
-
-        
-        messageInput.on("input", function() {
-            const message = $(this).val();
-            const messageLength = message.length;
-            let currentPage = 1;
-            let remainingChars;
-
-            if (messageLength <= 160) {
-                remainingChars = 160 - messageLength;
-            } else {
-                currentPage = Math.ceil((messageLength - 160) / 154) + 1;
-                remainingChars = 154 - ((messageLength - 160) % 154 || 154);
-            }
-
-            characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
-        });
-
-
-        $("#sms-form").submit(function(event) {
-            event.preventDefault();
-
-            const message = messageInput.val();
-            let recipients = recipientsInput.val();
-
-            // Replace numeric values starting with 0 with 234 in recipients
-            recipients = recipients.replace(/\b0(\d+)/g, "234$1");
-
-            // Split recipients by comma or new lines
-            const recipientsArray = recipients.split(/,|\n/).map(function(recipient) {
-                return recipient.trim();
-            });
-
-            // Load and parse the text file containing prefixes and charges
-            loadTextFile("PriceList.txt", function(text) {
-                const prefixCharges = {};
-                const lines = text.split("\n");
-
-                // Parse each line of the text file and store the prefixes and charges in the object
-                lines.forEach(function(line) {
-                    const [prefix, charge] = line.split("=");
-                    prefixCharges[prefix] = parseFloat(charge);
-                });
-
-                let totalCharge = 0;
-
-                recipientsArray.forEach(function(recipient) {
-                    const prefix = recipient.substr(0, 6);
-                    const charge = prefixCharges[prefix] || 0;
-                    const numPages = Math.ceil(message.length / 160);
-                    totalCharge += charge * numPages;
-                });
-
-                // Display the total charge and number of pages to the user
-                const numPages = Math.ceil(message.length / 160);
-                alert(`You are about to send ${numPages} page(s) to ${recipientsArray.length} recipient(s). Total charge: ${totalCharge.toFixed(2)} unit(s)`);
-
-                // Reset the form (optional)
-                $(this).trigger("reset");
-            });
-        });
-    });
-</script> -->
-
     <script>
         const pageOneCharLimit = 160;
-        const pageTwoCharLimit = 157;
+        const pageTwoCharLimit = 154;
 
         // Function to load the text file
         function loadTextFile(file, callback) {
@@ -196,23 +122,32 @@
             const messageInput = $("#message");
             const recipientsInput = $("#recipients");
 
+
             messageInput.on("input", function() {
                 const message = $(this).val();
                 const messageLength = message.length;
-                let currentPage = Math.ceil(messageLength / pageOneCharLimit);
-                let remainingChars = currentPage === 1 ? pageOneCharLimit - (messageLength % pageOneCharLimit || pageOneCharLimit) : pageTwoCharLimit - (messageLength % pageTwoCharLimit || pageTwoCharLimit);
+                let currentPage = 1;
+                let remainingChars;
+
+                if (messageLength <= 160) {
+                    remainingChars = 160 - messageLength;
+                } else {
+                    currentPage = Math.ceil((messageLength - 160) / 154) + 1;
+                    remainingChars = 154 - ((messageLength - 160) % 154 || 154);
+                }
 
                 characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
             });
 
+            //*** Uncomment if you want the js to handle it, else route would do */ 
+
             $("#sms-form").submit(function(event) {
                 event.preventDefault();
 
-                const senderId = $("#sender-id").val();
-                let recipients = recipientsInput.val();
                 const message = messageInput.val();
+                let recipients = recipientsInput.val();
 
-                // Replace numeric values starting with 0 with 234 in recipients (unchanged)
+                // Replace numeric values starting with 0 with 234 in recipients
                 recipients = recipients.replace(/\b0(\d+)/g, "234$1");
 
                 // Split recipients by comma or new lines
@@ -236,25 +171,28 @@
                     recipientsArray.forEach(function(recipient) {
                         const prefix = recipient.substr(0, 6);
                         const charge = prefixCharges[prefix] || 0;
-                        totalCharge += charge;
+                        const numPages = Math.ceil(message.length / 160);
+                        totalCharge += charge * numPages;
                     });
 
                     // Display the total charge and number of pages to the user
-                    const numPages = Math.ceil(message.length / pageOneCharLimit);
-                    const formattedCharge = totalCharge.toFixed(2);
+                    // const numPages = Math.ceil(message.length / 160);
+                    // alert(`You are about to send ${numPages} page(s) to ${recipientsArray.length} recipient(s). Total charge: ${totalCharge.toFixed(2)} unit(s)`);
 
-                    alert(`You are about to send ${numPages} page(s) to ${recipientsArray.length} recipient(s). Total charge: ${formattedCharge} unit(s)`);
+                    // // Reset the form (optional)
+                    // $(this).trigger("reset");
+                    // Prepare the AJAX response
+                    const response = `You are about to send ${Math.ceil(message.length / 160)} page(s) to ${recipientsArray.length} recipient(s). Total charge: ${totalCharge.toFixed(2)} unit(s)`;
 
-                    // Reset the form (unchanged)
+                    // Update the page content with the response
+                    $("#ajaxResponse").text(response);
+
+                    // Reset the form (optional)
                     $(this).trigger("reset");
                 });
             });
         });
     </script>
-
-
-
-
 </body>
 
 </html>
