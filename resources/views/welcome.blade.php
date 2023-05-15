@@ -106,30 +106,7 @@
         const messageInput = $("#message");
         const recipientsInput = $("#recipients");
 
-        // messageInput.on("input", function() {
-        //     const message = $(this).val();
-        //     const messageLength = message.length;
-        //     let remainingChars;
-        //     let currentPage = 1;
-        //     let currentPageLimit = pageOneCharLimit;
-
-        //     if (messageLength > pageOneCharLimit) {
-        //         const additionalPages = Math.ceil((messageLength - pageOneCharLimit) / pageTwoCharLimit);
-        //         currentPage = additionalPages + 1;
-        //         currentPageLimit = (currentPage === 1) ? pageOneCharLimit : pageTwoCharLimit;
-        //     }
-
-        //     remainingChars = currentPageLimit - (messageLength - (currentPage - 1) * currentPageLimit);
-        //     characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
-        // });
-        // messageInput.on("input", function() {
-        //     const message = $(this).val();
-        //     const messageLength = message.length;
-        //     let currentPage = Math.ceil(messageLength / 160);
-        //     let remainingChars = 160 - (messageLength % 160 || 154);
-
-        //     characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
-        // });
+        
         messageInput.on("input", function() {
             const message = $(this).val();
             const messageLength = message.length;
@@ -150,11 +127,10 @@
         $("#sms-form").submit(function(event) {
             event.preventDefault();
 
-            const senderId = $("#sender-id").val();
-            let recipients = recipientsInput.val();
             const message = messageInput.val();
+            let recipients = recipientsInput.val();
 
-            // Replace numeric values starting with 0 with 234 in recipients (unchanged)
+            // Replace numeric values starting with 0 with 234 in recipients
             recipients = recipients.replace(/\b0(\d+)/g, "234$1");
 
             // Split recipients by comma or new lines
@@ -178,14 +154,15 @@
                 recipientsArray.forEach(function(recipient) {
                     const prefix = recipient.substr(0, 6);
                     const charge = prefixCharges[prefix] || 0;
-                    totalCharge += charge; 
+                    const numPages = Math.ceil(message.length / 160);
+                    totalCharge += charge * numPages;
                 });
 
                 // Display the total charge and number of pages to the user
-                const numPages = Math.ceil(message.length / pageOneCharLimit);
+                const numPages = Math.ceil(message.length / 160);
                 alert(`You are about to send ${numPages} page(s) to ${recipientsArray.length} recipient(s). Total charge: ${totalCharge.toFixed(2)} unit(s)`);
 
-                // Reset the form (unchanged)
+                // Reset the form (optional)
                 $(this).trigger("reset");
             });
         });
