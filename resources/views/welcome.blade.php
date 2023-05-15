@@ -87,7 +87,7 @@
      
 <script>
     const pageOneCharLimit = 160;
-    const pageTwoCharLimit = 157;
+    const pageTwoCharLimit = 154;
 
     // Function to load the text file
     function loadTextFile(file, callback) {
@@ -106,22 +106,46 @@
         const messageInput = $("#message");
         const recipientsInput = $("#recipients");
 
+        // messageInput.on("input", function() {
+        //     const message = $(this).val();
+        //     const messageLength = message.length;
+        //     let remainingChars;
+        //     let currentPage = 1;
+        //     let currentPageLimit = pageOneCharLimit;
+
+        //     if (messageLength > pageOneCharLimit) {
+        //         const additionalPages = Math.ceil((messageLength - pageOneCharLimit) / pageTwoCharLimit);
+        //         currentPage = additionalPages + 1;
+        //         currentPageLimit = (currentPage === 1) ? pageOneCharLimit : pageTwoCharLimit;
+        //     }
+
+        //     remainingChars = currentPageLimit - (messageLength - (currentPage - 1) * currentPageLimit);
+        //     characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
+        // });
+        // messageInput.on("input", function() {
+        //     const message = $(this).val();
+        //     const messageLength = message.length;
+        //     let currentPage = Math.ceil(messageLength / 160);
+        //     let remainingChars = 160 - (messageLength % 160 || 154);
+
+        //     characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
+        // });
         messageInput.on("input", function() {
             const message = $(this).val();
             const messageLength = message.length;
-            let remainingChars;
             let currentPage = 1;
-            let currentPageLimit = pageOneCharLimit;
+            let remainingChars;
 
-            if (messageLength > pageOneCharLimit) {
-                const additionalPages = Math.ceil((messageLength - pageOneCharLimit) / pageTwoCharLimit);
-                currentPage = additionalPages + 1;
-                currentPageLimit = (currentPage === 1) ? pageOneCharLimit : pageTwoCharLimit;
+            if (messageLength <= 160) {
+                remainingChars = 160 - messageLength;
+            } else {
+                currentPage = Math.ceil((messageLength - 160) / 154) + 1;
+                remainingChars = 154 - ((messageLength - 160) % 154 || 154);
             }
 
-            remainingChars = currentPageLimit - (messageLength - (currentPage - 1) * currentPageLimit);
             characterCountElement.text(`${remainingChars} characters remaining for page ${currentPage}`);
         });
+
 
         $("#sms-form").submit(function(event) {
             event.preventDefault();
@@ -154,7 +178,7 @@
                 recipientsArray.forEach(function(recipient) {
                     const prefix = recipient.substr(0, 6);
                     const charge = prefixCharges[prefix] || 0;
-                    totalCharge += charge;
+                    totalCharge += charge; 
                 });
 
                 // Display the total charge and number of pages to the user
