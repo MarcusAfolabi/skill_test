@@ -177,7 +177,7 @@
 
     <script>
         const pageOneCharLimit = 160;
-        const pageTwoCharLimit = 154;
+        const pageTwoCharLimit = 157;
 
         // Function to load the text file
         function loadTextFile(file, callback) {
