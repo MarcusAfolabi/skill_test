@@ -61,31 +61,39 @@
 
 <body>
     <h1>SMS Platform </h1>
+    @php
+    $numPages = Session::get('numPages');
+    $numRecipients = Session::get('numRecipients');
+    $totalCharge = Session::get('totalCharge');
+    @endphp
+    <p>You are about to send {{ $numPages }} page(s) to {{ $numRecipients }} recipient(s).</p>
+    <p>Total charge: {{ $totalCharge }} unit(s)</p>
 
     <div class="form-container">
-        <form id="sms-form">
+        <form id="sms-form" method="POST" action="{{ route('sms.send') }}">
+            @csrf
             <div class="form-group">
                 <label class="form-label" for="sender-id">Sender ID:</label>
-                <input class="form-input" type="text" id="sender-id" required>
+                <input class="form-input" name="sender_id" type="text" id="sender-id" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="recipients">Recipients:</label>
-                <textarea class="form-input" id="recipients" rows="4" required></textarea>
+                <textarea class="form-input" name="recipients" id="recipients" rows="4" required></textarea>
                 <small>Enter a single number, comma-separated numbers, or numbers on new lines.</small>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="message">Message:</label>
-                <textarea class="form-input" id="message" rows="4" required></textarea>
+                <textarea class="form-input" name="message" id="message" rows="4" required></textarea>
                 <div id="character-count" class="character-count"></div>
             </div>
 
             <button class="form-button" type="submit">Send SMS</button>
         </form>
     </div>
-     
-<script>
+
+    <!-- <script>
     const pageOneCharLimit = 160;
     const pageTwoCharLimit = 154;
 
@@ -167,7 +175,7 @@
             });
         });
     });
-</script>
+</script> -->
 
 
 

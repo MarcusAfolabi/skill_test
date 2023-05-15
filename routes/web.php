@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SmsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::controller(SmsController::class)->group(function () { 
+    Route::get('/sms', 'index')->name('welcome');
+    Route::post('/sms/send', 'sendSms')->name('sms.send');
+    Route::view('/sms-summary', 'smsSummary')->name('sms.summary');
+
 });
